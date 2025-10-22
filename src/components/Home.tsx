@@ -17,6 +17,10 @@ import {
 } from "@mantine/core";
 import { IconFileUpload, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
+import CreateDeckModal from "./CreateDeckModal";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { create } from "domain";
 
 function SetRow({
   icon,
@@ -81,12 +85,24 @@ function MiniSet({
 
 export default function Home() {
   const { data: user, isLoading } = useUser();
+  const router = useRouter();
+
+  const [createModalOpened, setCreateModalOpened] = useState(false);
 
   if (isLoading) return <Loading />;
   if (!user) return null;
 
+  const handleDeckCreated = (deckId: string) => {
+    router.push(`/decks/${deckId}`);
+  }
+
   return (
     <Container size="lg" py="xl">
+      <CreateDeckModal
+        opened={createModalOpened}
+        onClose={() => setCreateModalOpened(false)}
+        onSuccess={handleDeckCreated}
+      />
       <Group justify="space-between" mb="xl">
         <Group gap="xs">
           <Box
@@ -153,7 +169,9 @@ export default function Home() {
         </Box>
 
         <Group gap="md">
-          <Button leftSection={<IconPlus size={16} />} color="cyan" radius="md">
+          <Button onClick={() => {
+            setCreateModalOpened(true);
+          }} leftSection={<IconPlus size={16} />} color="cyan" radius="md">
             Create flashcards
           </Button>
           <Button
