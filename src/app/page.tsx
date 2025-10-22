@@ -3,8 +3,11 @@
 import authenticateUser from "@/utils/auth/main";
 import { Button, Container, Text, Group, Stack, Title, Badge, Anchor } from "@mantine/core";
 import useUser from "@/utils/queries/useUser";
+import Loading from "@/components/page";
 export default function Home() {
-  // const { data: user } = useUser();
+  const { data: user, isLoading } = useUser();
+
+  if(isLoading) return <Loading />
 
   return (
     <Container
