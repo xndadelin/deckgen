@@ -8,6 +8,7 @@ export default function Home() {
   const { data: user, isLoading } = useUser();
 
   if(isLoading) return <Loading />
+  if(!user) return null;
 
   return (
     <Container
