@@ -29,7 +29,8 @@ export default function CreateDeckModal({
         }
     });
 
-    const handleCreateDeck = async () => {
+    const handleCreateDeck = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if(!form.values.title.trim() || !form.values.content.trim()) {
             notifications.show({
                 title: 'Error',
@@ -79,9 +80,10 @@ export default function CreateDeckModal({
                 icon: <IconSparkles />
             });
         } catch (error) {
+            console.error(error)
             notifications.show({
                 title: 'Error',
-                message: 'an unexpcted error occured',
+                message: 'an unexpcted error occured' + error,
                 color: 'red',
                 icon: <IconAlertCircle />
             })
