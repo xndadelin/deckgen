@@ -2,8 +2,10 @@
 
 import authenticateUser from "@/utils/auth/main";
 import { Button, Container, Text, Group, Stack, Title, Badge, Anchor } from "@mantine/core";
-
+import useUser from "@/utils/queries/useUser";
 export default function Home() {
+  // const { data: user } = useUser();
+
   return (
     <Container
       style={{

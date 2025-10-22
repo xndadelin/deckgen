@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@mantine/core/styles.css"
-import { MantineProvider } from "@mantine/core";
+import Providers from "./Providers";
 
 export const metadata: Metadata = {
   title: "Generate decks with AI!",
@@ -16,9 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MantineProvider defaultColorScheme="dark" withGlobalClasses>
+        <Providers>
           {children}
-        </MantineProvider>
+        </Providers>
       </body>
     </html>
   );
