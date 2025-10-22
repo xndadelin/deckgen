@@ -7,72 +7,49 @@ import {
   Avatar,
   TextInput,
   Button,
-  Badge,
   Title,
   Text,
   Stack,
   Grid,
   Card,
   Progress,
-  Paper,
-  Anchor,
-  ThemeIcon,
   Divider,
 } from "@mantine/core";
 import { IconFileUpload, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
-import { Divide } from "lucide-react";
 
 function SetRow({
   icon,
   title,
   meta,
   progress,
-  accent,
 }: {
   icon: string;
   title: string;
   meta: string;
   progress: number;
-  accent: string;
 }) {
   return (
-    <Group wrap="nowrap" align="center">
-      <Box
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          display: "grid",
-          placeItems: "center",
-          border: "1px solid var(--mantine-color-dark-5)",
-          background: "var(--mantine-color-dark-7",
-          fontSize: 18,
-        }}
-      >
-        {icon}
-      </Box>
+    <Box>
+      <Group wrap="nowrap" align="center" gap="md">
+        <Text style={{ fontSize: 24 }}>{icon}</Text>
 
-      <Box style={{ flex: 1 }}>
-        <Group justify="space-between" align="center">
-          <Text fw={600}>{title}</Text>
-          <Text c="dimmed" fz="xs">
+        <Box style={{ flex: 1 }}>
+          <Text fw={500} size="sm">
+            {title}
+          </Text>
+          <Text c="dimmed" size="xs" mt={2}>
             {meta}
           </Text>
-        </Group>
-        <Progress
-          value={progress}
-          size="sm"
-          radius="xl"
-          mt={6}
-          color="cyan"
-          style={{
-            border: "1px solid var(--mantine-color-dark-5)",
-          }}
-        />
-      </Box>
-      <Button color={accent}>Review</Button>
-    </Group>
+        </Box>
+
+        <Button size="xs" variant="light" color="cyan">
+          Review
+        </Button>
+      </Group>
+
+      <Progress value={progress} size="xs" radius="xl" mt="sm" color="cyan" />
+    </Box>
   );
 }
 
@@ -86,69 +63,20 @@ function MiniSet({
   meta: string;
 }) {
   return (
-    <Group
-      p="sm"
-      gap="sm"
-      style={{
-        border: "1px solid var(--mantine-color-dark-5)",
-        borderRadius: 12,
-      }}
-    >
-      <Box
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          display: "grid",
-          placeItems: "center",
-          border: "1px solid var(--mantine-color-dark-5)",
-          background: "var(--mantine-color-dark-5)",
-          fontSize: 18,
-        }}
-      >
-        {icon}
-      </Box>
-      <Box style={{ flex: 1 }}>
-        <Text fw={600}>{title}</Text>
-        <Text c="dimmed" fz="xs">
-          {meta}
-        </Text>
-      </Box>
-    </Group>
+    <Card p="md" radius="md" withBorder>
+      <Group gap="sm" wrap="nowrap">
+        <Text style={{ fontSize: 20 }}>{icon}</Text>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Text fw={500} size="sm" truncate>
+            {title}
+          </Text>
+          <Text c="dimmed" size="xs" mt={2}>
+            {meta}
+          </Text>
+        </Box>
+      </Group>
+    </Card>
   );
-}
-
-function TemplateRow({ label, pill }: { label: string; pill: string }) {
-  <Group
-    p="sm"
-    justify="space-between"
-    style={{
-      border: "1px solid var(--mantine-color-dark-5)",
-      borderRadius: 12,
-    }}
-  >
-    <Group gap="sm">
-      <Box
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          display: "grid",
-          placeItems: "center",
-          border: "1px solid var(--mantine-color-dark-5)",
-          background: "var(--mantine-color-dark-7)",
-          fontSize: 18,
-          color: "var(--mantine-color-cyan-5)",
-        }}
-      >
-        📗
-      </Box>
-      <Text fw={600}>{label}</Text>
-    </Group>
-    <Badge variant="light" color="gray">
-      {pill}
-    </Badge>
-  </Group>;
 }
 
 export default function Home() {
@@ -158,201 +86,206 @@ export default function Home() {
   if (!user) return null;
 
   return (
-    <Container
-      size="lg"
-      p="md"
-      style={{
-        minHeight: "100dvh",
-      }}
-    >
-      <Group justify="space-between" wrap="wrap" gap={"md"} mb={"lg"}>
+    <Container size="lg" py="xl">
+      <Group justify="space-between" mb="xl">
         <Group gap="xs">
           <Box
             style={{
-              width: 10,
-              height: 10,
+              width: 8,
+              height: 8,
               borderRadius: 999,
               background: "var(--mantine-color-cyan-6)",
             }}
           />
-          <Title order={4}>Deckgen</Title>
+          <Title order={3} fw={600}>
+            Deckgen
+          </Title>
         </Group>
 
         <TextInput
-          leftSection={<IconSearch size={18} />}
-          placeholder="Search sets, tags, templates..."
-          style={{
-            flexGrow: 1,
-          }}
-          variant="filled"
+          leftSection={<IconSearch size={16} />}
+          placeholder="Search..."
+          style={{ width: 300 }}
+          radius="md"
         />
 
         <Group gap="xs">
-          <Button component={Link} href="/docs" variant="light">
+          <Button
+            component={Link}
+            href="/docs"
+            variant="subtle"
+            color="gray"
+            size="sm"
+          >
             Docs
           </Button>
-          <Button component={Link} href="/templates" variant="filed">
+          <Button
+            component={Link}
+            href="/templates"
+            variant="subtle"
+            color="gray"
+            size="sm"
+          >
             Templates
           </Button>
           <Avatar
             src={user.user.user_metadata?.avatar_url || undefined}
             alt={user.user.email || "user avatar"}
-            radius={"xl"}
-          />
+            radius="xl"
+            size="sm"
+            color="cyan"
+          >
+            {user.user.user_metadata?.full_name?.[0] ||
+              user.user.email?.[0] ||
+              "U"}
+          </Avatar>
         </Group>
       </Group>
 
-      <Card
-        withBorder
-        radius="lg"
-        p="lg"
-        style={{
-          backdropFilter: "saturate(120%)",
-        }}
-      >
-        <Grid align="center">
-          <Grid.Col
-            span={{
-              base: 12,
-              md: 8,
-            }}
+      <Stack gap="xl">
+        <Box>
+          <Title order={1} fw={600} mb="xs">
+            Hey, {user.user.user_metadata?.full_name || user.user.email}
+          </Title>
+          <Text c="dimmed" size="sm">
+            Ready to learn something new today?
+          </Text>
+        </Box>
+
+        <Group gap="md">
+          <Button leftSection={<IconPlus size={16} />} color="cyan" radius="md">
+            Create flashcards
+          </Button>
+          <Button
+            leftSection={<IconFileUpload size={16} />}
+            variant="light"
+            color="cyan"
+            radius="md"
           >
-            <Stack gap="xs">
-              <Badge variant="light" color="gray" radius={"sm"} size="lg">
-                Welcome back!
-              </Badge>
-              <Title
-                order={2}
-                style={{
-                  lineHeight: 1.1,
-                }}
-              >
-                Hey, {user.user.user_metadata?.full_name || user.user.email},
-                are you ready to learn something new today?
-              </Title>
+            Import from PDF
+          </Button>
+        </Group>
 
-              <Box
-                style={{
-                  height: 3,
-                  width: "100%",
-                  borderRadius: 6,
-                  background: "var(--mantine-color-cyan-6)",
-                }}
-              />
-
-              <Group gap="sm" mt="md">
-                <Badge variant="outline" color="gray">
-                  🔥 3 days streak
-                </Badge>
-                <Badge variant="outline" color="gray">
-                  🃏 1200 cards reviewed
-                </Badge>
-                <Badge variant="outline" color="gray">
-                  📚 decks created
-                </Badge>
-              </Group>
-            </Stack>
-          </Grid.Col>
-
-          <Grid.Col
-            span={{
-              base: 12,
-              md: 4,
-            }}
-          >
-            <Stack>
-              <Button
-                leftSection={<IconPlus size={18} />}
-                color="cyan"
-                variant="filled"
-              >
-                Create flashcards
-              </Button>
-              <Button
-                leftSection={<IconFileUpload size={18} />}
-                variant="light"
-                color="indigo"
-              >
-                Import from text / PDF
-              </Button>
-              <Button variant="light" component={Link} href="/templates">
-                Browse some tamples
-              </Button>
-            </Stack>
-          </Grid.Col>
-          <Grid gutter="md" mb="lg">
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Card
-                withBorder
-                radius="lg"
-                p="lg"
-                style={{
-                  marginTop: 12,
-                }}
-              >
-                <Title order={4}>Continue learning</Title>
-                <Text c="dimmed" fz="sm" mb={"md"}>
+        <Grid gutter="xl">
+          <Grid.Col span={{ base: 12, md: 8 }}>
+            <Stack gap="xl">
+              <Box>
+                <Title order={4} fw={600} mb="xs">
+                  Continue learning
+                </Title>
+                <Text c="dimmed" size="sm" mb="lg">
                   Pick up where you left off
                 </Text>
 
-                <SetRow
-                  icon={"➕"}
-                  title="Calculus - Integration basics"
-                  meta="25/26 due"
-                  progress={62}
-                  accent="cyan"
-                />
-                <Divider my="sm" variant="dashed" />
-                <SetRow
-                  icon={"➕"}
-                  title="Calculus - Integration basics"
-                  meta="25/26 due"
-                  progress={62}
-                  accent="cyan"
-                />
-                <Divider my="sm" variant="dashed" />
-                <SetRow
-                  icon={"➕"}
-                  title="Calculus - Integration basics"
-                  meta="25/26 due"
-                  progress={62}
-                  accent="cyan"
-                />
-              </Card>
-              <Card withBorder radius="lg" p="lg" mb="md">
-                <Title order={4}>Your recent sets</Title>
-                <Text c="dimmed" fz="sm" mb="md">
-                  Quick access to the latest you edited.
+                <Stack gap="lg">
+                  <SetRow
+                    icon="📘"
+                    title="Calculus - Integration basics"
+                    meta="25/30 cards due"
+                    progress={83}
+                  />
+                  <SetRow
+                    icon="🧬"
+                    title="Biology - Cell structure"
+                    meta="12/20 cards due"
+                    progress={60}
+                  />
+                  <SetRow
+                    icon="🌍"
+                    title="Geography - World capitals"
+                    meta="8/15 cards due"
+                    progress={53}
+                  />
+                </Stack>
+              </Box>
+
+              <Box>
+                <Title order={4} fw={600} mb="xs">
+                  Recent sets
+                </Title>
+                <Text c="dimmed" size="sm" mb="lg">
+                  Quick access to your latest work
                 </Text>
 
                 <Grid>
-                  <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <MiniSet
-                      icon={"📘"}
-                      title="Calculus - Integration basics"
-                      meta="Edited 2 days ago"
+                      icon="📗"
+                      title="Spanish Vocabulary"
+                      meta="Edited 2 hours ago"
                     />
                   </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <MiniSet
-                      icon={"📘"}
-                      title="Calculus - Integration basics"
-                      meta="Edited 2 days ago"
+                      icon="💻"
+                      title="JavaScript Fundamentals"
+                      meta="Edited yesterday"
                     />
                   </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <MiniSet
-                      icon={"📘"}
-                      title="Calculus - Integration basics"
-                      meta="Edited 2 days ago"
+                      icon="🎨"
+                      title="Art History Timeline"
+                      meta="Edited 3 days ago"
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <MiniSet
+                      icon="⚛️"
+                      title="Chemistry Elements"
+                      meta="Edited 5 days ago"
                     />
                   </Grid.Col>
                 </Grid>
-              </Card>
-            </Grid.Col>
-          </Grid>
+              </Box>
+            </Stack>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card withBorder radius="md" p="lg">
+              <Stack gap="md">
+                <Box>
+                  <Title order={5} fw={600} mb="xs">
+                    Your stats
+                  </Title>
+                  <Text c="dimmed" size="xs">
+                    This week
+                  </Text>
+                </Box>
+
+                <Divider />
+
+                <Box>
+                  <Text size="xs" c="dimmed" mb={4}>
+                    Cards reviewed
+                  </Text>
+                  <Text size="xl" fw={600} c="cyan">
+                    1,247
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text size="xs" c="dimmed" mb={4}>
+                    Study streak
+                  </Text>
+                  <Text size="xl" fw={600} c="cyan">
+                    7 days
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text size="xs" c="dimmed" mb={4}>
+                    Decks created
+                  </Text>
+                  <Text size="xl" fw={600} c="cyan">
+                    12
+                  </Text>
+                </Box>
+              </Stack>
+            </Card>
+          </Grid.Col>
         </Grid>
-      </Card>
+      </Stack>
     </Container>
   );
 }
