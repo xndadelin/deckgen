@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { notifications } from "@mantine/notifications";
 import { cookies } from "next/headers";
 
-interface GenerateDeckInpu {
+interface GenerateDeckInput {
   title: string;
   description?: string;
   content: string;
@@ -126,5 +126,75 @@ Do not include any other text, explanations, or formatting outside of the JSON a
     })
     return []
   }
+}
 
+async function generateDeck(input: GenerateDeckInput) {
+    try {
+        const cookieStore = cookies();
+        const supabase = createClient(cookieStore);
+
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if(error || !user) {
+            return {
+                success: false, error: 'unauthorized'
+            }
+        }
+
+        if(!input.title || !input.content || input.cardCount <= 0) {
+            return {
+                success: false, error: 'invalid input'
+            }
+        }
+
+        const flascards = await generateFlashcards(input.content, input.cardCount);
+
+        if(flascards.length === 0) {
+            return {
+                success: false, error: 'failed to generate flashcards'
+            }
+        }
+
+        const { data: deck, error: deckError } = await supabase.from('decks')
+            .insert({
+                owner: user.id,
+                title: input.title,
+                description: input.description || '',
+                is_public: input.isPublic,
+                settings : {},
+            }).select().single();
+
+        if((deckError) || !deck) {
+            return {
+                success: false, error: 'failed to create deck'
+            }
+        }
+
+        const cards = flascards.map((card, index) => ({
+            deck_id: deck.id,
+            front: card.front,
+            back: card.back,
+            position: index,
+            extra: {}
+        }))
+
+        const { error: cardsError } = await supabase.from('cards')
+            .insert(cards);
+        
+        if(cardsError) {
+            await supabase.from('decks').delete().eq('id', deck.id);
+            return {
+                success: false, error: 'failed to create cards'
+            }
+        }
+        return {
+            success: true, deckId: deck.id, cardCount: flascards.length
+        }
+    } catch (error) {
+        notifications.show({
+            title: 'Error',
+            message: 'an unexpected error occured while generating deck',
+            color: 'red'
+        })
+    }
 }
