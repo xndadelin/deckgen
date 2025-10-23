@@ -3,11 +3,12 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest, 
-    { params } : { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
+        const { id: deckId } = await params;
 
         const {
             data: { user },
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest,
             }, { status: 401 })
         }
 
-        const { data: deck, error: deckError } = await supabase.from('decks').select('*').eq('id', params.id).single();
+        const { data: deck, error: deckError } = await supabase.from('decks').select('*').eq('id', deckId).single();
 
         if(deckError || !deck) {
             return NextResponse.json({
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest,
             })
         }
 
-        const { data: cards, error: cardsError } = await supabase.from('cards').select('*').eq('deck_id', params.id).order('position', {
+        const { data: cards, error: cardsError } = await supabase.from('cards').select('*').eq('deck_id', deckId).order('position', {
             ascending: true
         })
 
@@ -54,7 +55,8 @@ export async function GET(req: NextRequest,
 
     } catch (error) {
         return NextResponse.json({
-            error: 'Internal Server Error',
+            error: 'Internal Server Error'
+        }, {
             status: 500
         })
     }

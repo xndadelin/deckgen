@@ -4,12 +4,13 @@ import { cookies } from "next/headers";
 import { positive } from "zod";
 
 export async function POST(
-    request: NextRequest,
-    { params } : { params: { id: string }}
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
+        const { id: deckId } = await params;
 
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -30,7 +31,7 @@ export async function POST(
             })
         }
 
-        const { data: deck, error: deckError } = await supabase.from('decks').select('owner').eq('id', params.id).single();
+        const { data: deck, error: deckError } = await supabase.from('decks').select('owner').eq('id', deckId).single();
 
         if(deckError || !deck) {
             return NextResponse.json({
@@ -48,14 +49,14 @@ export async function POST(
             })
         }
 
-        const { data: maxCard } = await supabase.from('cards').select('position').eq('deck_id', params.id).order('position', {
+        const { data: maxCard } = await supabase.from('cards').select('position').eq('deck_id', deckId).order('position', {
             ascending: false
         }).limit(1).single();
 
         const newPosition = maxCard ? (maxCard.position + 1) : 1;
 
         const { data: newCard, error: cardError } = await supabase.from('cards').insert([{
-            deck_id: params.id,
+            deck_id: deckId,
             front,
             back,
             positive: newPosition,

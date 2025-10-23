@@ -4,12 +4,13 @@ import { cookies } from "next/headers";
 import { success } from "zod";
 
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
+    const { id: deckId } = await params;
 
     const {
       data: { user },
@@ -23,7 +24,7 @@ export async function PATCH(
     const { data: card, error: cardError } = await supabase
       .from("cards")
       .select("deck_id, decks!inner(owner)")
-      .eq("id", params.id)
+      .eq("id", deckId)
       .single();
 
     if (cardError || !card) {
@@ -44,7 +45,7 @@ export async function PATCH(
         front,
         back,
       })
-      .eq("id", params.id)
+      .eq("id", deckId)
       .select()
       .single();
 
@@ -69,12 +70,13 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params } : { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
+    const { id: deckId } = await params;
 
     const {
       data: { user },
@@ -87,7 +89,7 @@ export async function DELETE(
         status: 401
       })
     }
-    const { data: card, error: cardError } = await supabase.from('cards').select('deck_id, decks!inner(owner)').eq("id", params.id).single();
+    const { data: card, error: cardError } = await supabase.from('cards').select('deck_id, decks!inner(owner)').eq("id", deckId).single();
 
     if(cardError || !card) {
       return NextResponse.json({
@@ -105,7 +107,7 @@ export async function DELETE(
       })
     }
 
-    const { error: deleteError } = await supabase.from('cards').delete().eq('id', params.id);
+    const { error: deleteError } = await supabase.from('cards').delete().eq('id', deckId);
 
     if(deleteError) {
       return NextResponse.json({
