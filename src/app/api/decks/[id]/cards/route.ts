@@ -21,7 +21,7 @@ export async function POST(
         }
 
         const body = await request.json();
-        const { front, back } = body;
+        const { front, back, difficulty } = body;
 
         if(!front || !back) {
             return NextResponse.json({
@@ -59,8 +59,9 @@ export async function POST(
             deck_id: deckId,
             front,
             back,
-            positive: newPosition,
-            extra: {}
+            position: newPosition,
+            extra: {},
+            difficulty: body.difficulty || 'medium',
         }]).select().single();
 
         if(cardError || !newCard) {

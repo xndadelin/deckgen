@@ -15,6 +15,7 @@ interface GenerateDeckInput {
 interface FlashCard {
   front: string;
   back: string;
+  difficulty?: "easy" | "medium" | "hard";
 }
 
 async function generateFlashcards(
@@ -39,12 +40,15 @@ Requirements:
 - Each answer on the back should be informative yet brief.
 - Cover the most important concepts from the content.
 - Ensure questions are not ambiguous and answers are accurate.
+- Each question should a have a difficulty level relative to the content provided and the questions should vary in difficulty.
 
-Respond in JSON format as an array of objects with "front" and "back" properties:
+Respond in JSON format as an array of objects with "front" and "back" properties, and the difficulty level has to be included!
+Difficulty levels: "easy", "medium", "hard".
 [
     {
         "front: "Question here?",
-        "back": "Answer here."
+        "back": "Answer here.",
+        "difficulty: "easy|medium|hard"
     }
 ]
 
@@ -184,7 +188,8 @@ async function generateDeck(input: GenerateDeckInput) {
       front: card.front,
       back: card.back,
       position: index,
-      extra: {}
+      extra: {},
+      difficulty: card.difficulty || 'medium',
     }))
 
     const { error: cardsError } = await supabase.from('cards')
