@@ -39,10 +39,10 @@ function calculateNextReview(
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ card_id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { card_id: id } = await params;
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 

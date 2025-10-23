@@ -51,7 +51,7 @@ export default function StudyPage() {
         setStudied([...studied, currentCard.id]);
 
         try {
-            await fetch(`/api/decks/${deck.id}/cards/${currentCard.id}/review`, {
+            await fetch(`/api/cards/${deck.id}/${currentCard.id}/review`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
