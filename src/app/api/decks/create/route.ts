@@ -15,7 +15,7 @@ interface GenerateDeckInput {
 interface FlashCard {
   front: string;
   back: string;
-  difficulty?: "easy" | "medium" | "hard";
+  difficulty?: "easy"| "hard";
 }
 
 async function generateFlashcards(
@@ -43,12 +43,12 @@ Requirements:
 - Each question should a have a difficulty level relative to the content provided and the questions should vary in difficulty.
 
 Respond in JSON format as an array of objects with "front" and "back" properties, and the difficulty level has to be included!
-Difficulty levels: "easy", "medium", "hard".
+Difficulty levels: "easy", "hard".
 [
     {
-        "front: "Question here?",
+        "front": "Question here?",
         "back": "Answer here.",
-        "difficulty: "easy|medium|hard"
+        "difficulty": "easy|hard"
     }
 ]
 
