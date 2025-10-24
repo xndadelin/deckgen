@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import 'katex/dist/katex.min.css';
+import useReview from "@/utils/queries/useReview";
 
 interface FlashCard {
     id: string;
@@ -35,16 +36,14 @@ export default function StudyPage() {
     const deckId = params?.id;
     const router = useRouter();
     const {
-        data: deck,
+        data: cards,
         isLoading,
         error,
         refetch,
-      } = useDeck({
-        deck_id: deckId as string,
-    });
+      } = useReview(deckId as string);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
-    const [studied, setStudied] = useState<number[]>([]);
+    const [studied, setStudied] = useState<string[]>([]);
     const queryClient = useQueryClient();
 
     const handleFlip = () => {
@@ -52,12 +51,13 @@ export default function StudyPage() {
     }
 
     const handleAnswer = async(difficulty: 'easy' | 'hard') => {
-        if(!deck) return;
-        const currentCard = deck.cards[currentIndex];
+        if(!cards) return;
+        const currentCard = cards.cards[currentIndex];
+        if(!currentCard) return;
         setStudied([...studied, currentCard.id]);
 
         try {
-            await fetch(`/api/cards/${deck.id}/${currentCard.id}/review`, {
+            await fetch(`/api/cards/${deckId}/${currentCard.id}/review`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export default function StudyPage() {
             })
         }
 
-        if(currentIndex + 1 < deck.cards.length) {
+        if(currentIndex + 1 < cards.cards.length) {
             setCurrentIndex(currentIndex + 1);
             setFlipped(false);
         } else {
@@ -89,7 +89,7 @@ export default function StudyPage() {
                 message: 'You have completed the deck.',
                 color: 'green'
             })
-            router.push(`/decks/${deck.id}`)
+            router.push(`/decks/${deckId}`)
         }
     }
 
@@ -100,10 +100,11 @@ export default function StudyPage() {
     }
 
     if(isLoading) return <Loading />;
-    if(error || !deck) return <ErrorPage number={404} message="Deck not found" />;
+    if(error || !cards) return <ErrorPage number={404} message="Deck not found" />;
+    
+    const currentCard = cards?.cards[currentIndex];
 
-    const currentCard = deck.cards[currentIndex];
-    const progressValue = ((currentIndex + 1) / deck.cards.length) * 100;
+    const progressValue = ((currentIndex + 1) / (cards?.cards.length || 1)) * 100;
 
     return (
         <Container size="sm" py="xl">
@@ -114,16 +115,16 @@ export default function StudyPage() {
                             variant="subtle"
                             color="gray"
                             size="lg"
-                            onClick={() => router.push(`/decks/${deck.id}`)}
+                            onClick={() => router.push(`/decks/${deckId}`)}
                         >
                             <IconArrowLeft size={20} />
                         </ActionIcon>
                         <Box>
                             <Title order={3} fw={600}>
-                                {deck.title}
+                                Deck Review
                             </Title>
                             <Text c="dimmed" size="sm">
-                                Card {currentIndex + 1} of {deck.cards.length}
+                                Card {currentIndex + 1} of {cards.cards.length}
                             </Text>
                         </Box>
                     </Group>
