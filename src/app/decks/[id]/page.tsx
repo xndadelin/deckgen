@@ -32,6 +32,7 @@ import useDeck from "@/utils/queries/useDecks";
 import Loading from "@/components/page";
 import ErrorPage from "@/components/Error";
 import { notifications } from "@mantine/notifications";
+import useCardMutations from "@/utils/mutations/useCardMutations";
 
 interface Deck {
   id: string;
@@ -64,6 +65,11 @@ export default function DeckPage() {
   const [deleteModalOpened, setDeleteModalOpened] = useState<boolean>(false);
   const [cardToDelete, setCardToDelete] = useState<string | null>(null);
 
+  const { addCard: handleAddCard,
+    editCard,
+    deleteCard,
+    reviewCard } = useCardMutations();
+
   const editForm = useForm({
     initialValues: {
       front: "",
@@ -91,30 +97,11 @@ export default function DeckPage() {
   };
 
   const saveEditedCard = async (cardId: string) => {
-    try {
-      const response = await fetch(`/api/cards/${cardId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editForm.values),
-      });
-      if (!response.ok) throw new Error("failed to save card");
-      await refetch();
-      notifications.show({
-        title: 'Success',
-        color: 'green',
-        message: 'Card saved successfully.'
-      })
-      setEditingCard(null);
-      editForm.reset();
-    } catch (error) {
-      notifications.show({
-        title: 'Error',
-        color: 'red',
-        message: 'FAILED to save card.'
-      })
-    }
+    await editCard.mutateAsync({
+      cardId,
+      values: editForm.values,
+    })
+    setEditingCard(null);
   };
 
   const cancelEditing = () => {
@@ -129,56 +116,19 @@ export default function DeckPage() {
 
   const confirmDeleteCard = async () => {
     if (!cardToDelete) return;
-    try {
-      const response = await fetch(`/api/cards/${cardToDelete}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("failed to delete card");
-
-      await refetch();
-      setDeleteModalOpened(false);
-      setCardToDelete(null);
-      notifications.show({
-        title: 'Success',
-        color: 'green',
-        message: 'Card deleted successfully.'
-      })
-    } catch (error) {
-      notifications.show({
-        title: 'Error',
-        color: 'red',
-        message: 'FAILED to delete card.'
-      })
-    }
+    await deleteCard.mutateAsync({
+      cardId: cardToDelete
+    });
+    setDeleteModalOpened(false);
+    setCardToDelete(null);
   };
 
   const addCard = newCardForm.onSubmit(async (values) => {
-    try {
-      const response = await fetch(`/api/decks/${deck.id}/cards`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) throw new Error("failed to add card");
-      notifications.show({
-        title: 'Success',
-        color: 'green',
-        message: 'Card added successfully.'
+      await handleAddCard.mutateAsync({
+        deckId: deck!.id,
+        values
       })
-
-      await refetch();
       newCardForm.reset();
-    } catch (error) {
-      notifications.show({
-        title: 'Error',
-        color: 'red',
-        message: 'FAILED to add card.'
-      })
-    }
   });
 
   if (isLoading) return <Loading />;
