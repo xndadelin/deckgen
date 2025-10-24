@@ -16,12 +16,12 @@ function getOwnerId(rel: DeckRel): string | undefined {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
-    const { id: cardId } = params;
+    const { id: cardId } = await params;
 
     const {
       data: { user },
@@ -77,12 +77,12 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
-    const { id: cardId } = params;
+    const { id: cardId } = await params;
 
     const {
       data: { user },
