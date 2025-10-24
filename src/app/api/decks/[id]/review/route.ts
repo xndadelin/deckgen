@@ -4,13 +4,13 @@ import { cookies } from "next/headers";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+{ params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = cookies();
     const supabase = createClient(cookieStore);
 
-    const { id: deckId } = params;
+    const { id: deckId } = await params;
 
     const { data: deck, error: deckError } = await supabase
       .from("decks")
