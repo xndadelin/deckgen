@@ -192,7 +192,7 @@ export default function Home() {
               variant="light"
               color="cyan"
               radius="md"
-              onClick={() => setCreateModalOpened(true)}
+              onClick={() => router.push('/community_decks') }
             >
               Browse community decks
             </Button>

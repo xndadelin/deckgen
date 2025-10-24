@@ -7,7 +7,7 @@ import {
 } from "@mantine/core";
 import { IconArrowLeft, IconCheck, IconX, IconRotate } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
-import useDeck from "@/utils/queries/useDecks";
+import useDeck from "@/utils/queries/useDeck";
 import Loading from "@/components/page";
 import ErrorPage from "@/components/Error";
 import { useQueryClient } from "@tanstack/react-query";

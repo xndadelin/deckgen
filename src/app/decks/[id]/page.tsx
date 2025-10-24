@@ -28,7 +28,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import useDeck from "@/utils/queries/useDecks";
+import useDeck from "@/utils/queries/useDeck";
 import Loading from "@/components/page";
 import ErrorPage from "@/components/Error";
 import { notifications } from "@mantine/notifications";
