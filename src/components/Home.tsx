@@ -20,7 +20,7 @@ import {
   Progress,
   Divider,
 } from "@mantine/core";
-import { IconFileUpload, IconPlus, IconSearch } from "@tabler/icons-react";
+import { Icon3dCubeSphere, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -188,13 +188,13 @@ export default function Home() {
               Create flashcards
             </Button>
             <Button
-              leftSection={<IconFileUpload size={16} />}
+              leftSection={<Icon3dCubeSphere size={16} />}
               variant="light"
               color="cyan"
               radius="md"
               onClick={() => setCreateModalOpened(true)}
             >
-              Import from PDF
+              Browse community decks
             </Button>
           </Group>
 

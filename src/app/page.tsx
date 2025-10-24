@@ -74,7 +74,7 @@ export default function Home() {
             radius="md"
             onClick={authenticateUser}
           >
-            Convinced? Let's get started!
+            Convinced? Let&apos;s get started!
           </Button>
 
           <Anchor href="/learn-more" underline="never">

@@ -100,7 +100,7 @@ Do not include any other text, explanations, or formatting outside of the JSON a
   }
 
   try {
-    let parsed: any;
+    let parsed;
     const trimmed = generatedData.trim();
 
     if (trimmed.startsWith("[")) {

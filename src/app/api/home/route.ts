@@ -22,6 +22,15 @@ type Card = {
   created_at?: string;
 };
 
+type CardReviewRow = {
+  card_id: string;
+  interval: number;
+  efactor: number;
+  repetitions: number;
+  due_at: string;
+  cards: Card | null;
+};
+
 export async function GET() {
   try {
     const cookieStore = cookies();
@@ -72,7 +81,8 @@ export async function GET() {
       .eq("user_id", user.id)
       .lte("due_at", new Date().toISOString())
       .order("due_at", { ascending: true })
-      .limit(20);
+      .limit(20)
+      .returns<CardReviewRow[]>();
 
     if (reviewsError) {
       return NextResponse.json(
@@ -86,7 +96,7 @@ export async function GET() {
     const deckIds = Array.from(
       new Set(
         reviewsRows
-          .map((r: any) => r.cards?.deck_id)
+          .map((r) => r.cards?.deck_id)
           .filter((id): id is string => !!id)
       )
     );
@@ -96,16 +106,17 @@ export async function GET() {
       const { data: decksData, error: decksError } = await supabase
         .from("decks")
         .select("*")
-        .in("id", deckIds);
+        .in("id", deckIds)
+        .returns<Deck[]>();
 
       if (!decksError && decksData) {
         for (const d of decksData) {
-          decksById[d.id] = d as Deck;
+          decksById[d.id] = d;
         }
       }
     }
 
-    const continueLearningData = reviewsRows.map((row: any) => ({
+    const continueLearningData = reviewsRows.map((row) => ({
       card_review: {
         interval: row.interval,
         efactor: row.efactor,
@@ -121,7 +132,8 @@ export async function GET() {
       .select("*")
       .or(`is_public.eq.true,owner.eq.${user.id}`)
       .order("updated_at", { ascending: false })
-      .limit(6);
+      .limit(6)
+      .returns<Deck[]>();
 
     if (recentError) {
       return NextResponse.json(
@@ -148,7 +160,7 @@ export async function GET() {
     const stats = {
       cardsReviewed: reviewedCount,
       decksCreated: decksCount,
-      streakDays: 0, // to do: calculate streak pls
+      streakDays: 0,
     };
 
     return NextResponse.json({
