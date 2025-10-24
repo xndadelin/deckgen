@@ -99,7 +99,10 @@ export async function DELETE(
       })
     }
 
-    if(card.decks[0]?.owner !== user.id) {
+    const ownerId =
++      Array.isArray((card as any).decks) ? (card as any).decks[0]?.owner : (card as any).decks?.owner;
+
+    if(ownerId !== user.id) {
       return NextResponse.json({
         error: 'forbidden'
       }, {

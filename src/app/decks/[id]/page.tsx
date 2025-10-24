@@ -164,11 +164,20 @@ export default function DeckPage() {
       });
 
       if (!response.ok) throw new Error("failed to add card");
+      notifications.show({
+        title: 'Success',
+        color: 'green',
+        message: 'Card added successfully.'
+      })
 
       await refetch();
       newCardForm.reset();
     } catch (error) {
-      console.error("error adding card", error);
+      notifications.show({
+        title: 'Error',
+        color: 'red',
+        message: 'FAILED to add card.'
+      })
     }
   });
 
