@@ -41,6 +41,8 @@ Requirements:
 - Cover the most important concepts from the content.
 - Ensure questions are not ambiguous and answers are accurate.
 - Each question should a have a difficulty level relative to the content provided and the questions should vary in difficulty.
+- You can format the BACK only in markdown if needed (e.g., for lists, code snippets, math, etc.)
+- For formulas, use LaTex syntax within markdown.
 
 Respond in JSON format as an array of objects with "front" and "back" properties, and the difficulty level has to be included!
 Difficulty levels: "easy", "hard".

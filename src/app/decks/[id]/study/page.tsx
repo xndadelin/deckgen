@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     Container, Title, Button, Group, Stack, Card, Box, Progress, ActionIcon, Text
@@ -11,6 +11,10 @@ import useDeck from "@/utils/queries/useDeck";
 import Loading from "@/components/page";
 import ErrorPage from "@/components/Error";
 import { useQueryClient } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+import 'katex/dist/katex.min.css';
 
 interface FlashCard {
     id: string;
@@ -167,9 +171,11 @@ export default function StudyPage() {
                         </Text>
 
                         <Box style={{ textAlign: 'center', padding: '2rem' }}>
-                            <Text size="lg" fw={500}>
-                                {flipped ? currentCard.back : currentCard.front}
-                            </Text>
+                            <ReactMarkdown
+                                children={flipped ? currentCard.back : currentCard.front}
+                                remarkPlugins={[remarkMath]}
+                                rehypePlugins={[rehypeKatex]}
+                            />
                         </Box>
 
                         {!flipped && (
