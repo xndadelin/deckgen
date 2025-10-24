@@ -1,5 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import useUser from "@/utils/queries/useUser";
+import useHome from "@/utils/home/useHome";
 import Loading from "./page";
+import CreateDeckModal from "@/components/CreateDeckModal";
 import {
   Container,
   Group,
@@ -17,70 +22,20 @@ import {
 } from "@mantine/core";
 import { IconFileUpload, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
-import CreateDeckModal from "./CreateDeckModal";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-type User = {
-  id: string;
-  email?: string;
-  user_metadata?: {
-    full_name?: string;
-    avatar_url?: string;
-  };
-};
-
-type Deck = {
-  id: string;
-  owner: string;
-  title: string;
-  description?: string | null;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-type Card = {
-  id: string;
-  front: string;
-  back: string;
-  deck_id: string;
-  position: number;
-  extra: Record<string, unknown>;
-  created_at?: string;
-};
-
-type ContinueItem = {
-  card_review: {
-    interval: number;
-    efactor: number;
-    repetitions: number;
-    due_at: string;
-  };
-  card: Card | null;
-  deck: { id: string; title: string; owner: string } | null;
-};
-
-type HomePayload = {
-  user: User | null;
-  owned: Deck[],
-  continueLearning: ContinueItem[],
-  recent: Deck[],
-  stats: {
-    cardsReviewed: number;
-  }
-}
 
 function SetRow({
   icon,
   title,
   meta,
   progress,
+  deckId,
 }: {
   icon: string;
   title: string;
   meta: string;
   progress: number;
+  deckId: string;
 }) {
   return (
     <Box>
@@ -96,7 +51,13 @@ function SetRow({
           </Text>
         </Box>
 
-        <Button size="xs" variant="light" color="cyan">
+        <Button
+          component={Link}
+          href={`/decks/${deckId}/study`}
+          size="xs"
+          variant="light"
+          color="cyan"
+        >
           Review
         </Button>
       </Group>
@@ -110,13 +71,22 @@ function MiniSet({
   icon,
   title,
   meta,
+  href,
 }: {
   icon: string;
   title: string;
   meta: string;
+  href: string;
 }) {
   return (
-    <Card p="md" radius="md" withBorder>
+    <Card
+      p="md"
+      radius="md"
+      withBorder
+      component={Link}
+      href={href}
+      style={{ cursor: "pointer" }}
+    >
       <Group gap="sm" wrap="nowrap">
         <Text style={{ fontSize: 20 }}>{icon}</Text>
         <Box style={{ flex: 1, minWidth: 0 }}>
@@ -133,17 +103,24 @@ function MiniSet({
 }
 
 export default function Home() {
-  const { data: user, isLoading } = useUser();
+  const { data: user, isLoading: userLoading } = useUser();
+  const { data: home, isLoading: homeLoading, isError } = useHome();
   const router = useRouter();
-
   const [createModalOpened, setCreateModalOpened] = useState(false);
 
-  if (isLoading) return <Loading />;
-  if (!user) return null;
+  if (userLoading || homeLoading) return <Loading />;
+  if (isError) {
+    return (
+      <Container size="lg" py="xl">
+        <Text c="red">Failed to load home data</Text>
+      </Container>
+    );
+  }
+  if (!user || !home) return null;
 
   const handleDeckCreated = (deckId: string) => {
     router.push(`/decks/${deckId}`);
-  }
+  };
 
   return (
     <Container size="lg" py="xl">
@@ -162,9 +139,7 @@ export default function Home() {
               background: "var(--mantine-color-cyan-6)",
             }}
           />
-          <Title order={3} fw={600}>
-            Deckgen
-          </Title>
+          <Title order={3} fw={600}>Deckgen</Title>
         </Group>
 
         <TextInput
@@ -175,34 +150,20 @@ export default function Home() {
         />
 
         <Group gap="xs">
-          <Button
-            component={Link}
-            href="/docs"
-            variant="subtle"
-            color="gray"
-            size="sm"
-          >
+          <Button component={Link} href="/docs" variant="subtle" color="gray" size="sm">
             Docs
           </Button>
-          <Button
-            component={Link}
-            href="/templates"
-            variant="subtle"
-            color="gray"
-            size="sm"
-          >
+          <Button component={Link} href="/templates" variant="subtle" color="gray" size="sm">
             Templates
           </Button>
-          <Avatar
+          <Avatar 
             src={user.user.user_metadata?.avatar_url || undefined}
             alt={user.user.email || "user avatar"}
-            radius="xl"
-            size="sm"
+            radius="xl" 
+            size="sm" 
             color="cyan"
           >
-            {user.user.user_metadata?.full_name?.[0] ||
-              user.user.email?.[0] ||
-              "U"}
+            {user.user.user_metadata?.full_name?.[0] || user.user.email?.[0] || "U"}
           </Avatar>
         </Group>
       </Group>
@@ -217,142 +178,137 @@ export default function Home() {
           </Text>
         </Box>
 
-        <Group gap="md">
-          <Button onClick={() => {
-            setCreateModalOpened(true);
-          }} leftSection={<IconPlus size={16} />} color="cyan" radius="md">
-            Create flashcards
-          </Button>
-          <Button
-            leftSection={<IconFileUpload size={16} />}
-            variant="light"
-            color="cyan"
-            radius="md"
-          >
-            Import from PDF
-          </Button>
-        </Group>
+          <Group gap="md">
+            <Button
+              leftSection={<IconPlus size={16} />}
+              color="cyan"
+              radius="md"
+              onClick={() => setCreateModalOpened(true)}
+            >
+              Create flashcards
+            </Button>
+            <Button
+              leftSection={<IconFileUpload size={16} />}
+              variant="light"
+              color="cyan"
+              radius="md"
+              onClick={() => setCreateModalOpened(true)}
+            >
+              Import from PDF
+            </Button>
+          </Group>
 
-        <Grid gutter="xl">
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Stack gap="xl">
-              <Box>
-                <Title order={4} fw={600} mb="xs">
-                  Continue learning
-                </Title>
-                <Text c="dimmed" size="sm" mb="lg">
-                  Pick up where you left off
-                </Text>
-
-                <Stack gap="lg">
-                  <SetRow
-                    icon="📘"
-                    title="Calculus - Integration basics"
-                    meta="25/30 cards due"
-                    progress={83}
-                  />
-                  <SetRow
-                    icon="🧬"
-                    title="Biology - Cell structure"
-                    meta="12/20 cards due"
-                    progress={60}
-                  />
-                  <SetRow
-                    icon="🌍"
-                    title="Geography - World capitals"
-                    meta="8/15 cards due"
-                    progress={53}
-                  />
-                </Stack>
-              </Box>
-
-              <Box>
-                <Title order={4} fw={600} mb="xs">
-                  Recent sets
-                </Title>
-                <Text c="dimmed" size="sm" mb="lg">
-                  Quick access to your latest work
-                </Text>
-
-                <Grid>
-                  <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <MiniSet
-                      icon="📗"
-                      title="Spanish Vocabulary"
-                      meta="Edited 2 hours ago"
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <MiniSet
-                      icon="💻"
-                      title="JavaScript Fundamentals"
-                      meta="Edited yesterday"
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <MiniSet
-                      icon="🎨"
-                      title="Art History Timeline"
-                      meta="Edited 3 days ago"
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <MiniSet
-                      icon="⚛️"
-                      title="Chemistry Elements"
-                      meta="Edited 5 days ago"
-                    />
-                  </Grid.Col>
-                </Grid>
-              </Box>
-            </Stack>
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card withBorder radius="md" p="lg">
-              <Stack gap="md">
+          <Grid gutter="xl">
+            <Grid.Col span={{ base: 12, md: 8 }}>
+              <Stack gap="xl">
                 <Box>
-                  <Title order={5} fw={600} mb="xs">
-                    Your stats
+                  <Title order={4} fw={600} mb="xs">
+                    Continue learning
                   </Title>
-                  <Text c="dimmed" size="xs">
-                    This week
+                  <Text c="dimmed" size="sm" mb="lg">
+                    Pick up where you left off
                   </Text>
+
+                  <Stack gap="lg">
+                    {home.continueLearningData.length === 0 ? (
+                      <Text c="dimmed" size="sm">
+                        No cards due for review. Great job! 🎉
+                      </Text>
+                    ) : (
+                      home.continueLearningData.map((item, index) => (
+                        <SetRow
+                          key={item.card?.id || index}
+                          icon="📘"
+                          title={item.deck?.title || "Unknown deck"}
+                          meta={`Due ${new Date(
+                            item.card_review.due_at
+                          ).toLocaleDateString()}`}
+                          progress={Math.min(
+                            100,
+                            Math.round(
+                              (item.card_review.repetitions /
+                                (item.card_review.repetitions + 5)) *
+                                100
+                            )
+                          )}
+                          deckId={item.deck?.id || ""}
+                        />
+                      ))
+                    )}
+                  </Stack>
                 </Box>
 
-                <Divider />
-
                 <Box>
-                  <Text size="xs" c="dimmed" mb={4}>
-                    Cards reviewed
+                  <Title order={4} fw={600} mb="xs">
+                    Recent sets
+                  </Title>
+                  <Text c="dimmed" size="sm" mb="lg">
+                    Quick access to your latest work
                   </Text>
-                  <Text size="xl" fw={600} c="cyan">
-                    1,247
-                  </Text>
-                </Box>
 
-                <Box>
-                  <Text size="xs" c="dimmed" mb={4}>
-                    Study streak
-                  </Text>
-                  <Text size="xl" fw={600} c="cyan">
-                    7 days
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text size="xs" c="dimmed" mb={4}>
-                    Decks created
-                  </Text>
-                  <Text size="xl" fw={600} c="cyan">
-                    12
-                  </Text>
+                  <Grid>
+                    {home.owned.slice(0, 4).map((deck) => (
+                      <Grid.Col span={{ base: 12, sm: 6 }} key={deck.id}>
+                        <MiniSet
+                          icon="📗"
+                          title={deck.title}
+                          meta={`Updated ${new Date(
+                            deck.updated_at
+                          ).toLocaleDateString()}`}
+                          href={`/decks/${deck.id}`}
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
                 </Box>
               </Stack>
-            </Card>
-          </Grid.Col>
-        </Grid>
-      </Stack>
-    </Container>
-  );
-}
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Card withBorder radius="md" p="lg">
+                <Stack gap="md">
+                  <Box>
+                    <Title order={5} fw={600} mb="xs">
+                      Your stats
+                    </Title>
+                    <Text c="dimmed" size="xs">
+                      All time
+                    </Text>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Text size="xs" c="dimmed" mb={4}>
+                      Cards reviewed
+                    </Text>
+                    <Text size="xl" fw={600} c="cyan">
+                      {home.stats.cardsReviewed.toLocaleString()}
+                    </Text>
+                  </Box>
+
+                  <Box>
+                    <Text size="xs" c="dimmed" mb={4}>
+                      Study streak
+                    </Text>
+                    <Text size="xl" fw={600} c="cyan">
+                      {home.stats.streakDays} days
+                    </Text>
+                  </Box>
+
+                  <Box>
+                    <Text size="xs" c="dimmed" mb={4}>
+                      Decks created
+                    </Text>
+                    <Text size="xl" fw={600} c="cyan">
+                      {home.stats.decksCreated}
+                    </Text>
+                  </Box>
+                </Stack>
+              </Card>
+            </Grid.Col>
+          </Grid>
+        </Stack>
+      </Container>
+    );
+  }

@@ -10,6 +10,7 @@ import { notifications } from "@mantine/notifications";
 import useDeck from "@/utils/queries/useDecks";
 import Loading from "@/components/page";
 import ErrorPage from "@/components/Error";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FlashCard {
     id: string;
@@ -40,6 +41,7 @@ export default function StudyPage() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [studied, setStudied] = useState<number[]>([]);
+    const queryClient = useQueryClient();
 
     const handleFlip = () => {
         setFlipped(!flipped);
@@ -60,11 +62,17 @@ export default function StudyPage() {
                     difficulty
                 })
             })
+            queryClient.invalidateQueries({
+                queryKey: ["home"]
+            })
         } catch(error) {
             notifications.show({
                 title: 'Error',
                 message: 'Failed to submit review.',
                 color: 'red'
+            })
+            queryClient.invalidateQueries({
+                queryKey: ["home"]
             })
         }
 

@@ -83,7 +83,7 @@ export async function POST(
 
     const currentInterval = reviewData?.interval || 0;
     const currentEfactor = reviewData?.efactor || 2.5;
-    const currentRepetitions = reviewData?.repetitions || 0; // fix: plural
+    const currentRepetitions = reviewData?.repetitions || 0; 
 
     const { interval, efactor, repetitions } = calculateNextReview(
       difficulty,
@@ -96,6 +96,7 @@ export async function POST(
     dueAt.setDate(dueAt.getDate() + interval);
 
     if (reviewData) {
+      console.log('exist!')
       const { data: updatedReview, error: updateError } = await supabase
         .from("card_reviews")
         .update({

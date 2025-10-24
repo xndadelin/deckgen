@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export type User = {
+type User = {
   id: string;
   email?: string;
   user_metadata?: {
@@ -9,7 +9,7 @@ export type User = {
   };
 };
 
-export type Deck = {
+type Deck = {
   id: string;
   owner: string;
   title: string;
@@ -19,7 +19,7 @@ export type Deck = {
   updated_at: string;
 };
 
-export type Card = {
+type Card = {
   id: string;
   front: string;
   back: string;
@@ -29,7 +29,7 @@ export type Card = {
   created_at?: string;
 };
 
-export type ContinueItem = {
+type ContinueItem = {
   card_review: {
     interval: number;
     efactor: number;
@@ -37,26 +37,35 @@ export type ContinueItem = {
     due_at: string;
   };
   card: Card | null;
-  deck: { id: string; title: string; owner: string } | null;
+  deck: Deck | null;
 };
 
-export type HomePayload = {
-  user: User | null;
+type HomePayload = {
+  user: User;
   owned: Deck[];
-  continueLearning: ContinueItem[];
+  continueLearningData: ContinueItem[];
   recent: Deck[];
-  stats: { cardsReviewed: number; streakDays: number; decksCreated: number };
+  stats: {
+    cardsReviewed: number;
+    decksCreated: number;
+    streakDays: number;
+  };
 };
+
+async function fetchHomeData(): Promise<HomePayload> {
+  const response = await fetch("/api/home");
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch home data");
+  }
+  
+  return response.json();
+}
 
 export default function useHome() {
-  return useQuery<HomePayload, Error>({
+  return useQuery({
     queryKey: ["home"],
-    queryFn: async () => {
-      const response = await fetch("/api/home");
-      if (!response.ok) {
-        throw new Error("failed to fetch home data");
-      }
-      return (await response.json()) as HomePayload;
-    },
+    queryFn: fetchHomeData,
+    staleTime: 1000 * 60 * 5,
   });
 }
