@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useUser from "@/utils/queries/useUser";
 import useHome from "@/utils/home/useHome";
 import Loading from "./page";
@@ -19,10 +19,60 @@ import {
   Card,
   Progress,
   Divider,
+  Accordion,
 } from "@mantine/core";
 import { Icon3dCubeSphere, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+type Deck = {
+  id: string;
+  owner: string;
+  title: string;
+  description: string;
+  is_public: boolean;
+  settings: Record<string, unknown>;
+  cover_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type CardT = {
+  id: string;
+  back: string;
+  extra: Record<string, unknown>;
+  front: string;
+  deck_id: string;
+  position: number;
+};
+
+type CardReview = {
+  interval: number;
+  efactor: number;
+  repetitions: number;
+  due_at: string;
+};
+
+type ContinueItem = {
+  card_review: CardReview;
+  card: CardT;
+  deck: Deck;
+};
+
+type HomeData = {
+  owned: Deck[];
+  continueLearningData: ContinueItem[];
+  recent: Deck[];
+  stats: { cardsReviewed: number; decksCreated: number; streakDays: number };
+  user: unknown;
+};
+
+type GroupedDeck = {
+  deck: Deck;
+  items: ContinueItem[];
+  nextDueAt?: string;
+  progressPct: number;
+};
 
 function SetRow({
   icon,
@@ -107,6 +157,35 @@ export default function Home() {
   const { data: home, isLoading: homeLoading, isError } = useHome();
   const router = useRouter();
   const [createModalOpened, setCreateModalOpened] = useState(false);
+
+  const groupedByDeck = useMemo<Record<string, GroupedDeck>>(() => {
+    const source = home?.continueLearningData || [];
+    const acc: Record<string, GroupedDeck> = {};
+
+    for(const item of source) {
+      const deckId = item.deck?.id
+      if(!acc[deckId!]) {
+        acc[deckId!] = {
+          deck: item.deck as Deck,
+          items: [],
+          nextDueAt: item.card_review.due_at,
+          progressPct: 0,
+        }
+      };
+      acc[deckId!].items.push(item as ContinueItem);
+      const current = acc[deckId!].nextDueAt!;
+      if(!current || new Date(item.card_review.due_at) < new Date(current)) {
+        acc[deckId!].nextDueAt = item.card_review.due_at;
+      }
+    }
+    Object.keys(acc).forEach((deckId) => {
+      const items = acc[deckId!].items;
+      const sumRep = items.reduce((sum, item) => sum + (item.card_review.repetitions || 0), 0);
+      const denom = items.length * 5 + sumRep;
+      acc[deckId!].progressPct = Math.min(100, Math.round((sumRep / Math.max(1, denom)) * 100));
+    })
+    return acc
+  }, [home])
 
   if (userLoading || homeLoading) return <Loading />;
   if (isError) {
@@ -215,25 +294,63 @@ export default function Home() {
                         No cards due for review. Great job! 🎉
                       </Text>
                     ) : (
-                      home.continueLearningData.map((item, index) => (
-                        <SetRow
-                          key={item.card?.id || index}
-                          icon="📘"
-                          title={item.deck?.title || "Unknown deck"}
-                          meta={`Due ${new Date(
-                            item.card_review.due_at
-                          ).toLocaleDateString()}`}
-                          progress={Math.min(
-                            100,
-                            Math.round(
-                              (item.card_review.repetitions /
-                                (item.card_review.repetitions + 5)) *
-                                100
-                            )
-                          )}
-                          deckId={item.deck?.id || ""}
-                        />
-                      ))
+                      <Accordion multiple variant="separated" radius={"md"}>
+                        {Object.values(groupedByDeck).map(( { deck, items, nextDueAt, progressPct } ) => (
+                          <Accordion.Item key={deck.id} value={deck.id}>
+                            <Accordion.Control>
+                              <Group justify="space-between" align="center" wrap="nowrap">
+                                <Group gap="sm" wrap="nowrap" align="center">
+                                  <Text style={{ fontSize: 20 }}>
+                                    📗
+                                  </Text>
+                                  <Box>
+                                    <Text fw={600} size="sm">{deck.title}</Text>
+                                    <Text c="dimmed" size="xs" mt={2}>
+                                      {items.length} cards due • Next: {new Date(nextDueAt!).toLocaleDateString()}
+                                    </Text>
+                                  </Box>
+                                </Group>
+                                <Group gap="md" wrap="nowrap" align="center">
+                                  <Progress value={progressPct} size="xs" radius={"xl"} w={140} color="cyan" />
+                                  <Button
+                                    size="xs"
+                                    ml="md"
+                                    color="cyan"
+                                    variant="light"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push(`/decks/${deck.id}/review/`)
+                                    }}
+                                  >
+                                    Review deck
+                                  </Button>
+                                </Group>
+                              </Group>
+                            </Accordion.Control>
+
+                            <Accordion.Panel>
+                              <Stack gap="sm">
+                                {items.map((item) => (
+                                  <Card key={item.card.id} withBorder radius="md" p="md">
+                                    <Text fw={500} size="sm">
+                                      {item.card.front}
+                                    </Text>
+                                    <Group justify="space-between" mt="xs" align="center">
+                                      <Text c="dimmed" size="xs">
+                                        Due on {new Date(item.card_review.due_at).toLocaleDateString()}
+                                      </Text>
+                                      <Button component={Link} href={`/decks/${deck.id}/review/${item.card.id}`} size='xs' variant="light" c='cyan'>
+                                        Review card
+                                      </Button>
+                                    </Group>
+                                  </Card>
+                                ))}
+                              </Stack>
+                            </Accordion.Panel>
+
+                          </Accordion.Item>
+                        ))}
+                      </Accordion>
                     )}
                   </Stack>
                 </Box>

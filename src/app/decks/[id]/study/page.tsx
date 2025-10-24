@@ -172,10 +172,11 @@ export default function StudyPage() {
 
                         <Box style={{ textAlign: 'center', padding: '2rem' }}>
                             <ReactMarkdown
-                                children={flipped ? currentCard.back : currentCard.front}
                                 remarkPlugins={[remarkMath]}
                                 rehypePlugins={[rehypeKatex]}
-                            />
+                            >
+                                {flipped ? currentCard.back : currentCard.front}
+                            </ReactMarkdown>
                         </Box>
 
                         {!flipped && (
