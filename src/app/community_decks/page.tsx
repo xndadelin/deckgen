@@ -1,13 +1,31 @@
 "use client";
 
-import { Container, Grid, Card, Title, Text, Group, Anchor } from "@mantine/core";
+import { Container, Grid, Card, Title, Text, Group, Anchor, Stack, TextInput, ActionIcon } from "@mantine/core";
 import usePublicDecks from "@/utils/queries/useDecks";
 import Loading from "@/components/page";
 import Error from "@/components/Error";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useDebouncedValue } from "@mantine/hooks";
+import { IconSearch, IconX } from "@tabler/icons-react";
 
 export default function CommunityDecksPage() {
   const { data: decks = [], isLoading, isError, error } = usePublicDecks();
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useDebouncedValue(search, 1200);
+
+    
+  const filteredDecks = useMemo(() => {
+    const q = debouncedSearch.toLocaleLowerCase().trim();
+    if(!q) return decks;
+
+    return decks.filter((deck) => {
+        const title = (deck.title ?? "").toLocaleLowerCase();
+        const description = (deck.description ?? "").toLocaleLowerCase();
+        return title.includes(q) || description.includes(q);
+    })
+  }, [decks, debouncedSearch] ) 
+
 
   if (isLoading) return <Loading />;
   if (isError) {
@@ -25,11 +43,42 @@ export default function CommunityDecksPage() {
         Community decks
       </Title>
 
-      {decks.length === 0 ? (
+      <Stack mb="md" gap="xs">
+        <TextInput
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            placeholder="Search decks by title or description..."
+            aria-label="search community decks"
+            leftSection={<IconSearch size={18} aria-hidden="true" />}
+            __clearable
+            rightSection={
+                search ? (
+                    <ActionIcon
+                        variant="subtle"
+                        onClick={() => setSearch('')}
+                    >
+                        <IconX size={16} />   
+                    </ActionIcon>
+                ) : null
+            }
+        />
+
+        {search && (
+            <Text size="xs" c="dimmed">
+                Searching for: <Text span fw={600} c="cyan">
+                    {debouncedSearch || "..."}
+                </Text>
+            </Text>
+        )}
+
+
+      </Stack>
+
+      {filteredDecks.length === 0 ? (
         <Text c="dimmed">No public decks yet.</Text>
       ) : (
         <Grid gutter="md">
-          {decks.map((deck) => (
+          {filteredDecks.map((deck) => (
             <Grid.Col
               key={deck.id}
               span={{
