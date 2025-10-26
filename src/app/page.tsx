@@ -63,7 +63,7 @@ export default function Home() {
         </Title>
 
         <Text c="dimmed" fz="lg" maw={720}>
-          Paste your resources, pick a few options, and let it generate flashcards for you! And export it anywhere you want.
+          Paste your resources, pick a few options, and let it generate flashcards for you! Perfect for you.
         </Text>
 
         <Group gap="md" justify="center" wrap="wrap">
