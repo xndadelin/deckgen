@@ -78,7 +78,7 @@ export default function Home() {
           </Button>
 
           <Anchor href="/learn-more" underline="never">
-            <Button variant="light" color="blue" size="lg" radius={"md"}>
+            <Button variant="light" color="blue" component="a" href="/help" size="lg" radius={"md"}>
               Learn more ➜
             </Button>
           </Anchor>
