@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useDecks from "@/utils/queries/useDecks";
 import { Combobox, InputBase, useCombobox } from "@mantine/core";
+import { createClient } from "@/utils/supabase/client";
 
 type Deck = {
   id: string;
@@ -280,8 +281,13 @@ export default function Home() {
           <Button component={Link} href="/help" variant="subtle" color="gray" size="sm">
             Help
           </Button>
-          <Button component={Link} href="/community_decks" variant="subtle" color="gray" size="sm">
-            Community decks
+          <Button onClick={async() => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            window.location.href = '/'
+
+          }} variant="subtle" color="gray" size="sm">
+            Logout
           </Button>
           <Avatar 
             src={user.user.user_metadata?.avatar_url || undefined}
