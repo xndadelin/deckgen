@@ -12,6 +12,7 @@ export default function useUser() {
             const { data, error } = await supabase.auth.getUser();
             if (error) throw error;
             return data;
-        }
+        },
+        staleTime: 5 * 60 * 1000
     })
 }

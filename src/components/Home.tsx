@@ -24,6 +24,8 @@ import {
 import { Icon3dCubeSphere, IconPlus, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useDecks from "@/utils/queries/useDecks";
+import { Combobox, InputBase, useCombobox } from "@mantine/core";
 
 type Deck = {
   id: string;
@@ -157,6 +159,30 @@ export default function Home() {
   const { data: home, isLoading: homeLoading, isError } = useHome();
   const router = useRouter();
   const [createModalOpened, setCreateModalOpened] = useState(false);
+  const { data: decks = [], isLoading, isError: isErrorPublicDecks, error } = useDecks();
+  const comboxbox = useCombobox({
+    onDropdownClose: () => comboxbox.resetSelectedOption()
+  })
+  const [value, setValue] = useState('');
+  const [search, setSearch] = useState('');
+
+  const shouldFilterDecks = decks.every((item) => item.title !== search)
+  const filteredDecks = shouldFilterDecks
+    ? decks.filter((deck) => deck.title.toLowerCase().includes(search)) : decks;
+
+  const options = filteredDecks.map((deck) => (
+    <Combobox.Option
+      key={deck.id}
+      value={deck.title}
+      onClick={() => router.push(`/decks/${deck.id}`)}
+      style={{
+        cursor: 'pointer',
+        color: 'white'
+      }}
+    >
+      {deck.title}
+    </Combobox.Option>
+  ))
 
   const groupedByDeck = useMemo<Record<string, GroupedDeck>>(() => {
     const source = home?.continueLearningData || [];
@@ -221,12 +247,34 @@ export default function Home() {
           <Title order={3} fw={600}>Deckgen</Title>
         </Group>
 
-        <TextInput
-          leftSection={<IconSearch size={16} />}
-          placeholder="Search..."
-          style={{ width: 300 }}
-          radius="md"
-        />
+        <Combobox
+          store={comboxbox}
+          withinPortal={false}
+          onOptionSubmit={(option) => {
+            router.push(`/decks/${decks.find((deck) => deck.title === option)?.id}`);
+            comboxbox.closeDropdown();
+          }}
+        >
+          <Combobox.Target>
+            <InputBase
+              rightSection={<Combobox.Chevron />}
+              onClick={() => comboxbox.openDropdown()}
+              onFocus={() => comboxbox.openDropdown()}
+              onBlur={() => comboxbox.closeDropdown()}
+              placeholder="Search decks..."
+              rightSectionPointerEvents="none"
+              style={{
+                width: '300px'
+              }}
+            />
+          </Combobox.Target>
+
+          <Combobox.Dropdown>
+            <Combobox.Option value="__no_decks__" disabled>
+              {options.length === 0 ? <Text c="dimmed" size="sm">No decks found</Text> : options}
+            </Combobox.Option>
+          </Combobox.Dropdown>
+        </Combobox>
 
         <Group gap="xs">
           <Button component={Link} href="/help" variant="subtle" color="gray" size="sm">
