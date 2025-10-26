@@ -2,7 +2,7 @@
 
 import { Container, Grid, Card, Title, Text, Group, Anchor, Stack, TextInput, ActionIcon } from "@mantine/core";
 import usePublicDecks from "@/utils/queries/useDecks";
-import Loading from "@/components/page";
+import Loading from "@/components/Loading";
 import Error from "@/components/Error";
 import Link from "next/link";
 import { useMemo, useState } from "react";

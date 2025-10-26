@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import useUser from "@/utils/queries/useUser";
 import useHome from "@/utils/home/useHome";
-import Loading from "./page";
+import Loading from "./Loading";
 import CreateDeckModal from "@/components/CreateDeckModal";
 import {
   Container,
@@ -229,11 +229,11 @@ export default function Home() {
         />
 
         <Group gap="xs">
-          <Button component={Link} href="/docs" variant="subtle" color="gray" size="sm">
-            Docs
+          <Button component={Link} href="/help" variant="subtle" color="gray" size="sm">
+            Help
           </Button>
-          <Button component={Link} href="/templates" variant="subtle" color="gray" size="sm">
-            Templates
+          <Button component={Link} href="/community_decks" variant="subtle" color="gray" size="sm">
+            Community decks
           </Button>
           <Avatar 
             src={user.user.user_metadata?.avatar_url || undefined}

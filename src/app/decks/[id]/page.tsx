@@ -29,7 +29,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import useDeck from "@/utils/queries/useDeck";
-import Loading from "@/components/page";
+import Loading from "@/components/Loading";
 import ErrorPage from "@/components/Error";
 import { notifications } from "@mantine/notifications";
 import useCardMutations from "@/utils/mutations/useCardMutations";

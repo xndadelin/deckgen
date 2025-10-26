@@ -3,7 +3,7 @@
 import authenticateUser from "@/utils/auth/main";
 import { Button, Container, Text, Group, Stack, Title, Badge, Anchor } from "@mantine/core";
 import useUser from "@/utils/queries/useUser";
-import Loading from "@/components/page";
+import Loading from "@/components/Loading";
 import PostLoginHome from "@/components/Home";
 export default function Home() {
   const { data: user, isLoading } = useUser();
