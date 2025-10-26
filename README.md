@@ -5,6 +5,7 @@
          style="width: 100%;">
   </a>
 </div>
+
 # deckgen ‼️
 
 deckgen is an open-source web application that leverages AI to help you create effective decks of flashcards for learning
